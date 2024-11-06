@@ -65,11 +65,19 @@ where
             })
             .collect();
 
+        // Calculate total cache size in bytes
+        let total_cache_size: usize = config.tiers.iter()
+            .map(|t| t.total_capacity)
+            .sum();
+
         let (tx, _) = broadcast::channel(config.update_channel_size);
 
         Self {
             tiers,
-            key_to_tier: Arc::new(DashMap::with_capacity(1024)),
+            key_to_tier: Arc::new(DashMap::new_with_capacity_and_hasher_and_size(
+                total_cache_size,
+                Default::default(),
+            )),
             config: Arc::new(config),
             update_tx: tx,
             size_estimator,
