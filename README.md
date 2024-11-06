@@ -22,7 +22,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-tiered-cache = "0.1.4"
+tiered-cache = "0.1.5"
 ```
 
 ## Quick Start
@@ -59,8 +59,7 @@ if let Some(value) = cache.get(&b"key1".to_vec()) {
 
 // Async get_or_update
 let value = cache.get_or_update(b"key2".to_vec(), async {
-    // Fetch or compute value asynchronously
-    Some(vec![0; 2048])
+    None // Returns None instead of Some(vec![0; 2048])
 }).await;
 ```
 
