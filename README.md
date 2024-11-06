@@ -45,7 +45,6 @@ let config = CacheConfig {
             size_range: (64 * 1024, MB), // 64KB-1MB
         },
     ],
-    default_ttl: Some(Duration::from_secs(3600)),
     update_channel_size: 1024,
 };
 
