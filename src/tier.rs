@@ -23,8 +23,10 @@ where
     #[inline]
     pub fn put(&self, key: K, entry: CacheEntry<V>) -> Option<V> {
         let mut cache = self.cache.write();
-        cache.insert(key, entry)
-            .map(|old| Arc::try_unwrap(old.unwrap().value).unwrap_or_else(|arc| (*arc).clone()))
+        match cache.insert(key, entry) {
+            Ok(old) => old.map(|e| Arc::try_unwrap(e.value).unwrap_or_else(|arc| (*arc).clone())),
+            Err(_) => None
+        }
     }
 
     #[inline]
