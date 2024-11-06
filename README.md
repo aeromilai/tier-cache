@@ -49,16 +49,16 @@ let config = CacheConfig {
 };
 
 // Create the cache
-let cache = AutoCache::<String, Vec<u8>>::new(config);
+let cache = AutoCache::<Vec<u8>, Vec<u8>>::new(config);
 
 // Basic operations
-cache.put("key1".to_string(), vec![0; 1024]);
-if let Some(value) = cache.get(&"key1".to_string()) {
+cache.put(b"key1".to_vec(), vec![0; 1024]);
+if let Some(value) = cache.get(&b"key1".to_vec()) {
     println!("Retrieved value of size: {}", value.len());
 }
 
 // Async get_or_update
-let value = cache.get_or_update("key2".to_string(), async {
+let value = cache.get_or_update(b"key2".to_vec(), async {
     // Fetch or compute value asynchronously
     Some(vec![0; 2048])
 }).await;

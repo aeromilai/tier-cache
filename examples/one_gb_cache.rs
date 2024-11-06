@@ -27,10 +27,10 @@ fn main() {
         update_channel_size: 1024,
     };
 
-    let cache = AutoCache::<String, Vec<u8>>::new(config);
+    let cache = AutoCache::<Vec<u8>, Vec<u8>>::new(config);
 
     // Example usage
-    let key = "example".to_string();
+    let key = b"example".to_vec();
     let value = vec![0u8; 500 * 1024]; // 500KB value
     
     cache.put(key.clone(), value);
