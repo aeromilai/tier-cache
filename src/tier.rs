@@ -3,6 +3,7 @@
 use super::*;
 use lru_mem::HeapSize;
 
+#[allow(dead_code)]
 pub(crate) struct Tier<K, V> {
     cache: RwLock<lru_mem::LruCache<K, CacheEntry<V>>>,
     size_range: (usize, usize),

@@ -2,6 +2,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use lru_mem::HeapSize;
 
+#[allow(dead_code)]
 pub(crate) struct CacheEntry<V> {
     pub value: Arc<V>,
     pub size: usize,
