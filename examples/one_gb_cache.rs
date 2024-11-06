@@ -24,7 +24,6 @@ fn main() {
                 size_range: (MB, 10 * MB),   // 1MB-10MB
             },
         ],
-        default_ttl: Some(Duration::from_secs(3600)), // 1 hour TTL
         update_channel_size: 1024,
     };
 

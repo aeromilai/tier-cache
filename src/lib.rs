@@ -112,11 +112,7 @@ where
         // Fast path: check if size is within any tier
         let tier_idx = self.find_tier_for_size(size)?;
         
-        let entry = CacheEntry::new(
-            value,
-            size,
-            self.config.default_ttl,
-        );
+        let entry = CacheEntry::new(value, size);
 
         let tier = &self.tiers[tier_idx];
         self.key_to_tier.insert(key.clone(), tier_idx);

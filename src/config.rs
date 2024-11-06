@@ -5,8 +5,6 @@ use serde::Deserialize;
 pub struct CacheConfig {
     /// Vector of tier configurations, ordered from smallest to largest size
     pub tiers: Vec<TierConfig>,
-    /// Default time-to-live for cache entries. None means entries never expire
-    pub default_ttl: Option<std::time::Duration>,
     /// Size of the channel used for cache update notifications
     pub update_channel_size: usize,
 }

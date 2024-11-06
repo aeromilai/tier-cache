@@ -33,9 +33,7 @@ where
     #[inline]
     pub fn get(&self, key: &K) -> Option<Arc<V>> {
         let mut cache = self.cache.write();
-        cache.get(key)
-            .filter(|entry| entry.is_valid())
-            .map(|entry| entry.value.clone())
+        cache.get(key).map(|entry| entry.value.clone())
     }
 
     #[inline]

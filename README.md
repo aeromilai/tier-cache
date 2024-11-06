@@ -10,7 +10,7 @@ A high-performance multi-tiered cache implementation in Rust with automatic sizi
 
 - 🚀 Multiple cache tiers with automatic item placement based on size
 - ⚡ Async support with Tokio
-- 🔄 Built-in TTL support
+- 🔄 LRU eviction policy
 - 📊 Detailed statistics for monitoring
 - 🔍 Efficient lookup with DashMap
 - 🛡️ Thread-safe design
@@ -70,7 +70,6 @@ let value = cache.get_or_update("key2".to_string(), async {
 The cache is configured using tiers, where each tier has:
 - A total capacity in bytes
 - A size range for entries (min_size, max_size)
-- Optional TTL for entries
 
 Items are automatically placed in the appropriate tier based on their size. The cache uses the `HeapSize` trait to accurately measure memory usage.
 
