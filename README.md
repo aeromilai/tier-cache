@@ -86,6 +86,42 @@ See the [examples](examples/) directory for more usage examples, including:
 - Handling different value sizes
 - Monitoring cache statistics
 
+## Note
+The `update_channel_size: 1024` is used to configure the capacity of a broadcast channel that notifies subscribers about cache updates. This is implemented using Tokio's broadcast channel.
+
+In the code, specifically in `lib.rs`, we can see:
+
+```rust
+let (tx, _) = broadcast::channel(config.update_channel_size);
+```
+
+This channel is used to notify interested parties when values in the cache are updated. Users of the cache can subscribe to these updates using the `subscribe_updates()` method:
+
+```rust
+/// Subscribes to cache updates
+#[inline]
+pub fn subscribe_updates(&self) -> broadcast::Receiver<K> {
+    self.update_tx.subscribe()
+}
+```
+
+When values are updated in the cache (specifically in the `update_value` method), notifications are sent through this channel:
+
+```rust
+#[inline]
+fn notify_update(&self, key: K) {
+    let _ = self.update_tx.send(key);
+}
+```
+
+The size of 1024 means that the channel can buffer up to 1024 update notifications before older messages start getting dropped. This is useful in scenarios where you want to monitor or react to cache updates, such as:
+- Synchronizing multiple cache instances
+- Logging cache operations
+- Triggering side effects when cache entries are updated
+
+If you expect a very high rate of cache updates, you might want to increase this value. Conversely, if you don't need update notifications, you could set it to a smaller value to save memory.
+
+
 ## License
 
 Licensed under either of:
