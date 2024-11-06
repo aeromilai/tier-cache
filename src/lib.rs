@@ -22,8 +22,6 @@ use std::{hash::Hash, sync::Arc};
 use tokio::sync::broadcast;
 use tier::Tier;
 
-const KB: usize = 1024;
-const MB: usize = 1024 * KB;
 
 type TierVec<K, V> = SmallVec<[Arc<CachePadded<Tier<K, V>>>; 4]>;
 
