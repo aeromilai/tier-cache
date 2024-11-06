@@ -12,6 +12,7 @@ pub use config::{CacheConfig, TierConfig};
 pub use stats::{CacheStats, TierStats};
 
 use crossbeam_utils::CachePadded;
+use lru_mem::HeapSize;
 use dashmap::DashMap;
 use entry::CacheEntry;
 use futures::Future;
@@ -29,8 +30,8 @@ type TierVec<K, V> = SmallVec<[Arc<CachePadded<Tier<K, V>>>; 4]>;
 /// High-performance multi-tiered cache with automatic sizing
 pub struct AutoCache<K, V> 
 where
-    K: Hash + Eq + Clone + Send + Sync + 'static,
-    V: Clone + Send + Sync + 'static,
+    K: Hash + Eq + Clone + Send + Sync + HeapSize + 'static,
+    V: Clone + Send + Sync + HeapSize + 'static,
 {
     tiers: TierVec<K, V>,
     key_to_tier: Arc<DashMap<K, usize>>,

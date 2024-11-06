@@ -25,6 +25,7 @@ where
         let mut cache = self.cache.write();
         cache.insert(key, entry)
             .map(|old| Arc::try_unwrap(old.value).unwrap_or_else(|arc| (*arc).clone()))
+            .map(|v| v)
     }
 
     #[inline]
@@ -51,7 +52,7 @@ where
         let cache = self.cache.read();
         TierStats {
             items: cache.len(),
-            size: cache.len() * std::mem::size_of::<CacheEntry<V>>(),
+            size: cache.iter().map(|(_, entry)| entry.heap_size()).sum(),
             capacity: config.total_capacity,
             hit_count: 0,
             miss_count: 0,
