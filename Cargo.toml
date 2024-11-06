@@ -1,6 +1,6 @@
 [package]
 name = "tiered-cache"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "A high-performance multi-tiered cache with automatic sizing"
 license = "MIT OR Apache-2.0"
