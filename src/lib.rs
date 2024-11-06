@@ -185,7 +185,7 @@ where
     #[inline]
     pub fn remove(&self, key: &K) -> Option<V> {
         let tier_idx = self.key_to_tier.remove(key)?;
-        let tier = &self.tiers[tier_idx.value()];
+        let tier = &self.tiers[tier_idx.1];
         tier.remove(key)
     }
 
