@@ -35,7 +35,6 @@ where
     key_to_tier: Arc<DashMap<K, usize>>,
     config: Arc<CacheConfig>,
     update_tx: broadcast::Sender<K>,
-    size_estimator: Arc<dyn Fn(&V) -> usize + Send + Sync>,
 }
 
 impl<K, V> AutoCache<K, V>
@@ -43,17 +42,9 @@ where
     K: Hash + Eq + Clone + Send + Sync + HeapSize + 'static,
     V: Clone + Send + Sync + HeapSize + 'static,
 {
-    /// Creates a new cache with default size estimation
+    /// Creates a new cache
     #[inline]
     pub fn new(config: CacheConfig) -> Self {
-        Self::with_size_estimator(config, Arc::new(std::mem::size_of_val))
-    }
-
-    /// Creates a new cache with custom size estimation
-    pub fn with_size_estimator(
-        config: CacheConfig,
-        size_estimator: Arc<dyn Fn(&V) -> usize + Send + Sync>,
-    ) -> Self {
         let tiers = config
             .tiers
             .iter()
@@ -79,7 +70,6 @@ where
             )),
             config: Arc::new(config),
             update_tx: tx,
-            size_estimator,
         }
     }
 
@@ -117,7 +107,7 @@ where
     /// Puts a value into the cache
     #[inline]
     pub fn put(&self, key: K, value: V) -> Option<V> {
-        let size = (self.size_estimator)(&value);
+        let size = value.heap_size();
         
         // Fast path: check if size is within any tier
         let tier_idx = self.find_tier_for_size(size)?;
