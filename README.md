@@ -22,7 +22,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-tiered-cache = "0.1.3"
+tiered-cache = "0.1.4"
 ```
 
 ## Quick Start
