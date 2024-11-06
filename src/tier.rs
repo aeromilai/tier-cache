@@ -24,7 +24,7 @@ where
     pub fn put(&self, key: K, entry: CacheEntry<V>) -> Option<V> {
         let mut cache = self.cache.write();
         cache.insert(key, entry)
-            .map(|old| Arc::try_unwrap(old.value).unwrap_or_else(|arc| (*arc).clone()))
+            .map(|old| Arc::try_unwrap(old.unwrap().value).unwrap_or_else(|arc| (*arc).clone()))
     }
 
     #[inline]
