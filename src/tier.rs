@@ -1,6 +1,7 @@
 
 // src/tier.rs
 use super::*;
+use lru_mem::HeapSize;
 
 pub(crate) struct Tier<K, V> {
     cache: RwLock<lru_mem::LruCache<K, CacheEntry<V>>>,
@@ -9,8 +10,8 @@ pub(crate) struct Tier<K, V> {
 
 impl<K, V> Tier<K, V>
 where
-    K: Hash + Eq + Clone,
-    V: Clone,
+    K: Hash + Eq + Clone + HeapSize,
+    V: Clone + HeapSize,
 {
     pub fn new(capacity: usize, size_range: (usize, usize)) -> Self {
         Self {

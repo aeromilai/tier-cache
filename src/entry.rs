@@ -1,10 +1,17 @@
 use std::sync::Arc;
 use std::time::{Duration, Instant};
+use lru_mem::HeapSize;
 
 pub(crate) struct CacheEntry<V> {
     pub value: Arc<V>,
     pub size: usize,
     pub expires_at: Option<Instant>,
+}
+
+impl<V: HeapSize> HeapSize for CacheEntry<V> {
+    fn heap_size(&self) -> usize {
+        self.value.heap_size() + std::mem::size_of::<Self>()
+    }
 }
 
 impl<V> CacheEntry<V> {
