@@ -16,8 +16,8 @@ use dashmap::DashMap;
 use entry::CacheEntry;
 use futures::Future;
 use parking_lot::RwLock;
-use smallvec::{smallvec, SmallVec};
-use std::{hash::Hash, sync::Arc, time::Instant};
+use smallvec::SmallVec;
+use std::{hash::Hash, sync::Arc};
 use tokio::sync::broadcast;
 use tier::Tier;
 

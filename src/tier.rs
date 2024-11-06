@@ -22,7 +22,7 @@ where
     #[inline]
     pub fn put(&self, key: K, entry: CacheEntry<V>) -> Option<V> {
         let mut cache = self.cache.write();
-        cache.put(key, entry)
+        cache.insert(key, entry)
             .map(|old| Arc::try_unwrap(old.value).unwrap_or_else(|arc| (*arc).clone()))
     }
 
@@ -37,7 +37,7 @@ where
     #[inline]
     pub fn remove(&self, key: &K) -> Option<V> {
         let mut cache = self.cache.write();
-        cache.pop(key)
+        cache.remove(key)
             .map(|entry| Arc::try_unwrap(entry.value).unwrap_or_else(|arc| (*arc).clone()))
     }
 
@@ -50,7 +50,7 @@ where
         let cache = self.cache.read();
         TierStats {
             items: cache.len(),
-            size: cache.size_in_bytes(),
+            size: cache.len() * std::mem::size_of::<CacheEntry<V>>(),
             capacity: config.total_capacity,
             hit_count: 0,
             miss_count: 0,
