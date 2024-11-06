@@ -74,9 +74,8 @@ where
 
         Self {
             tiers,
-            key_to_tier: Arc::new(DashMap::new_with_capacity_and_hasher_and_size(
-                total_cache_size,
-                Default::default(),
+            key_to_tier: Arc::new(DashMap::with_capacity(
+                total_cache_size / std::mem::size_of::<(K, usize)>()
             )),
             config: Arc::new(config),
             update_tx: tx,
