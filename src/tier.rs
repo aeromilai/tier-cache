@@ -10,8 +10,8 @@ pub(crate) struct Tier<K, V> {
 
 impl<K, V> Tier<K, V>
 where
-    K: Hash + Eq + Clone + HeapSize,
-    V: Clone + HeapSize,
+    K: Hash + Eq + Clone + HeapSize + Send + Sync + 'static,
+    V: Clone + HeapSize + Send + Sync + 'static,
 {
     pub fn new(capacity: usize, size_range: (usize, usize)) -> Self {
         Self {
@@ -25,7 +25,6 @@ where
         let mut cache = self.cache.write();
         cache.insert(key, entry)
             .map(|old| Arc::try_unwrap(old.value).unwrap_or_else(|arc| (*arc).clone()))
-            .map(|v| v)
     }
 
     #[inline]

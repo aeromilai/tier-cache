@@ -42,8 +42,8 @@ where
 
 impl<K, V> AutoCache<K, V>
 where
-    K: Hash + Eq + Clone + Send + Sync + 'static,
-    V: Clone + Send + Sync + 'static,
+    K: Hash + Eq + Clone + Send + Sync + HeapSize + 'static,
+    V: Clone + Send + Sync + HeapSize + 'static,
 {
     /// Creates a new cache with default size estimation
     #[inline]
