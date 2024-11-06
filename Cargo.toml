@@ -1,0 +1,31 @@
+[package]
+name = "tiered-cache"
+version = "0.1.0"
+edition = "2021"
+description = "A high-performance multi-tiered cache with automatic sizing"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/aeromilai/tiered-cache"
+keywords = ["cache", "lru", "memory", "performance", "async"]
+categories = ["caching", "data-structures"]
+
+[dependencies]
+lru-mem = "0.3"
+parking_lot = "0.12"
+dashmap = "5.5"
+tokio = { version = "1.0", features = ["sync", "time", "rt-multi-thread"] }
+serde = { version = "1.0", features = ["derive"] }
+futures = "0.3"
+smallvec = "1.11"
+crossbeam-utils = "0.8"
+
+[dev-dependencies]
+criterion = "0.5"
+tokio-test = "0.4"
+rand = "0.8"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+
