@@ -26,7 +26,7 @@ use tier::Tier;
 type TierVec<K, V> = SmallVec<[Arc<CachePadded<Tier<K, V>>>; 4]>;
 
 /// High-performance multi-tiered cache with automatic sizing
-pub struct AutoCache<K, V> 
+pub struct TieredCache<K, V>
 where
     K: Hash + Eq + Clone + Send + Sync + HeapSize + 'static,
     V: Clone + Send + Sync + HeapSize + 'static,
@@ -37,7 +37,7 @@ where
     update_tx: broadcast::Sender<K>,
 }
 
-impl<K, V> AutoCache<K, V>
+impl<K, V> TieredCache<K, V>
 where
     K: Hash + Eq + Clone + Send + Sync + HeapSize + 'static,
     V: Clone + Send + Sync + HeapSize + 'static,
