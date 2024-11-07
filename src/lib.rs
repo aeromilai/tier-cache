@@ -31,7 +31,7 @@ pub struct AutoCache<K: Hash + Eq, V> {
     tiers: TierVec<K, V>,
     key_to_tier: Arc<DashMap<K, usize>>,
     config: Arc<CacheConfig>,
-    update_tx: broadcast::Sender<K>,
+    update_tx: Option<broadcast::Sender<K>>,
 }
 
 impl<K, V> AutoCache<K, V>
@@ -57,7 +57,9 @@ where
         // Calculate total cache size in bytes
         let total_cache_size: usize = config.tiers.iter().map(|t| t.total_capacity).sum();
 
-        let (tx, _) = broadcast::channel(config.update_channel_size);
+        let tx = config
+            .update_channel_size
+            .map(|size| broadcast::channel(size).0);
 
         Self {
             tiers,
@@ -127,13 +129,13 @@ where
     /// Subscribes to cache updates
     #[inline]
     #[must_use]
-    pub fn subscribe_updates(&self) -> broadcast::Receiver<K> {
-        self.update_tx.subscribe()
+    pub fn subscribe_updates(&self) -> Option<broadcast::Receiver<K>> {
+        self.update_tx.as_ref().map(|tx| tx.subscribe())
     }
 
     #[inline]
     fn notify_update(&self, key: K) {
-        let _ = self.update_tx.send(key);
+        self.update_tx.as_ref().map(|tx| tx.send(key));
     }
 
     #[inline]

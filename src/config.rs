@@ -6,7 +6,7 @@ pub struct CacheConfig {
     /// Vector of tier configurations, ordered from smallest to largest size
     pub tiers: Vec<TierConfig>,
     /// Size of the channel used for cache update notifications
-    pub update_channel_size: usize,
+    pub update_channel_size: Option<usize>,
 }
 
 /// Configuration for a single cache tier
