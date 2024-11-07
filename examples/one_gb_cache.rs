@@ -1,5 +1,5 @@
 use std::time::Duration;
-use tiered_cache::{AutoCache, CacheConfig, TierConfig};
+use tiered_cache::{CacheConfig, TierConfig, TieredCache};
 
 const MB: usize = 1024 * 1024; // 1 megabyte
 const GB: usize = 1024 * MB;   // 1 gigabyte
@@ -27,7 +27,7 @@ fn main() {
         update_channel_size: 1024,
     };
 
-    let cache = AutoCache::<Vec<u8>, Vec<u8>>::new(config);
+    let cache = TieredCache::<Vec<u8>, Vec<u8>>::new(config);
 
     // Example usage
     let key = b"example".to_vec();
