@@ -1,8 +1,6 @@
-use std::time::Duration;
 use tiered_cache::{AutoCache, CacheConfig, TierConfig};
 
 const MB: usize = 1024 * 1024; // 1 megabyte
-const GB: usize = 1024 * MB;   // 1 gigabyte
 
 fn main() {
     // Configure a 1GB cache with three tiers:
@@ -13,7 +11,7 @@ fn main() {
         tiers: vec![
             TierConfig {
                 total_capacity: 200 * MB,
-                size_range: (0, 64 * 1024),  // 0-64KB
+                size_range: (0, 64 * 1024), // 0-64KB
             },
             TierConfig {
                 total_capacity: 300 * MB,
@@ -21,7 +19,7 @@ fn main() {
             },
             TierConfig {
                 total_capacity: 500 * MB,
-                size_range: (MB, 10 * MB),   // 1MB-10MB
+                size_range: (MB, 10 * MB), // 1MB-10MB
             },
         ],
         update_channel_size: 1024,
@@ -32,9 +30,9 @@ fn main() {
     // Example usage
     let key = b"example".to_vec();
     let value = vec![0u8; 500 * 1024]; // 500KB value
-    
+
     cache.put(key.clone(), value);
-    
+
     if let Some(retrieved) = cache.get(&key) {
         println!("Retrieved value of size: {} bytes", retrieved.len());
     }
@@ -44,7 +42,7 @@ fn main() {
     println!("Cache statistics:");
     println!("Total items: {}", stats.total_items);
     println!("Total size: {} MB", stats.total_size / MB);
-    
+
     for (i, tier) in stats.tier_stats.iter().enumerate() {
         println!("\nTier {}:", i);
         println!("  Items: {}", tier.items);

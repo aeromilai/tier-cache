@@ -1,5 +1,6 @@
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
+#![warn(missing_debug_implementations, rust_2018_idioms, missing_docs)]
 
 //! High-performance multi-tiered cache with automatic sizing and async support.
 
@@ -12,25 +13,21 @@ pub use config::{CacheConfig, TierConfig};
 pub use stats::{CacheStats, TierStats};
 
 use crossbeam_utils::CachePadded;
-use lru_mem::HeapSize;
 use dashmap::DashMap;
 use entry::CacheEntry;
 use futures::Future;
+use lru_mem::HeapSize;
 use parking_lot::RwLock;
 use smallvec::SmallVec;
 use std::{hash::Hash, sync::Arc};
-use tokio::sync::broadcast;
 use tier::Tier;
-
+use tokio::sync::broadcast;
 
 type TierVec<K, V> = SmallVec<[Arc<CachePadded<Tier<K, V>>>; 4]>;
 
 /// High-performance multi-tiered cache with automatic sizing
-pub struct AutoCache<K, V> 
-where
-    K: Hash + Eq + Clone + Send + Sync + HeapSize + 'static,
-    V: Clone + Send + Sync + HeapSize + 'static,
-{
+#[derive(Debug)]
+pub struct AutoCache<K: Hash + Eq, V> {
     tiers: TierVec<K, V>,
     key_to_tier: Arc<DashMap<K, usize>>,
     config: Arc<CacheConfig>,
@@ -44,6 +41,7 @@ where
 {
     /// Creates a new cache
     #[inline]
+    #[must_use]
     pub fn new(config: CacheConfig) -> Self {
         let tiers = config
             .tiers
@@ -57,16 +55,14 @@ where
             .collect();
 
         // Calculate total cache size in bytes
-        let total_cache_size: usize = config.tiers.iter()
-            .map(|t| t.total_capacity)
-            .sum();
+        let total_cache_size: usize = config.tiers.iter().map(|t| t.total_capacity).sum();
 
         let (tx, _) = broadcast::channel(config.update_channel_size);
 
         Self {
             tiers,
             key_to_tier: Arc::new(DashMap::with_capacity(
-                total_cache_size / std::mem::size_of::<(K, usize)>()
+                total_cache_size / std::mem::size_of::<(K, usize)>(),
             )),
             config: Arc::new(config),
             update_tx: tx,
@@ -108,10 +104,10 @@ where
     #[inline]
     pub fn put(&self, key: K, value: V) -> Option<V> {
         let size = value.heap_size();
-        
+
         // Fast path: check if size is within any tier
         let tier_idx = self.find_tier_for_size(size)?;
-        
+
         let entry = CacheEntry::new(value, size);
 
         let tier = &self.tiers[tier_idx];
@@ -130,6 +126,7 @@ where
 
     /// Subscribes to cache updates
     #[inline]
+    #[must_use]
     pub fn subscribe_updates(&self) -> broadcast::Receiver<K> {
         self.update_tx.subscribe()
     }
@@ -154,6 +151,7 @@ where
     }
 
     /// Gets cache statistics
+    #[must_use]
     pub fn stats(&self) -> CacheStats {
         let mut tier_stats = Vec::with_capacity(self.tiers.len());
         let mut total_items = 0;
@@ -189,4 +187,3 @@ where
         self.key_to_tier.clear();
     }
 }
-

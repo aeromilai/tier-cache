@@ -1,12 +1,10 @@
-
-// src/tier.rs
-use super::*;
 use lru_mem::HeapSize;
+use super::{RwLock, CacheEntry, Hash, Arc, TierConfig, TierStats};
 
-#[allow(dead_code)]
+#[derive(Debug)]
 pub(crate) struct Tier<K, V> {
     cache: RwLock<lru_mem::LruCache<K, CacheEntry<V>>>,
-    size_range: (usize, usize),
+    _size_range: (usize, usize),
 }
 
 impl<K, V> Tier<K, V>
@@ -17,7 +15,7 @@ where
     pub fn new(capacity: usize, size_range: (usize, usize)) -> Self {
         Self {
             cache: RwLock::new(lru_mem::LruCache::new(capacity)),
-            size_range,
+            _size_range: size_range,
         }
     }
 
@@ -26,7 +24,7 @@ where
         let mut cache = self.cache.write();
         match cache.insert(key, entry) {
             Ok(old) => old.map(|e| Arc::try_unwrap(e.value).unwrap_or_else(|arc| (*arc).clone())),
-            Err(_) => None
+            Err(_) => None,
         }
     }
 
@@ -39,7 +37,8 @@ where
     #[inline]
     pub fn remove(&self, key: &K) -> Option<V> {
         let mut cache = self.cache.write();
-        cache.remove(key)
+        cache
+            .remove(key)
             .map(|entry| Arc::try_unwrap(entry.value).unwrap_or_else(|arc| (*arc).clone()))
     }
 

@@ -11,8 +11,8 @@ categories = ["caching", "data-structures"]
 [dependencies]
 lru-mem = "0.3"
 parking_lot = "0.12"
-dashmap = "5.5"
-tokio = { version = "1.0", features = ["sync", "time", "rt-multi-thread"] }
+dashmap = "6.1.0"
+tokio = { version = "1.41.1", features = ["sync", "time", "rt-multi-thread"] }
 serde = { version = "1.0", features = ["derive"] }
 futures = "0.3"
 smallvec = "1.11"

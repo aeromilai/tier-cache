@@ -14,6 +14,6 @@ pub struct CacheConfig {
 pub struct TierConfig {
     /// Maximum total capacity of the tier in bytes
     pub total_capacity: usize,
-    /// Valid size range for entries in this tier as (min_size, max_size) in bytes
+    /// Valid size range for entries in this tier as (`min_size`, `max_size`) in bytes
     pub size_range: (usize, usize),
 }

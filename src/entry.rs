@@ -1,10 +1,10 @@
-use std::sync::Arc;
 use lru_mem::HeapSize;
+use std::sync::Arc;
 
-#[allow(dead_code)]
+#[derive(Debug)]
 pub(crate) struct CacheEntry<V> {
     pub value: Arc<V>,
-    pub size: usize,
+    pub _size: usize,
 }
 
 impl<V: HeapSize> HeapSize for CacheEntry<V> {
@@ -17,7 +17,7 @@ impl<V> CacheEntry<V> {
     pub fn new(value: V, size: usize) -> Self {
         Self {
             value: Arc::new(value),
-            size,
+            _size: size,
         }
     }
 }
