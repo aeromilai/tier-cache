@@ -25,7 +25,7 @@ fn main() {
         update_channel_size: None,
     };
 
-    let cache = AutoCache::<Vec<u8>, Vec<u8>>::new(config);
+    let cache = TieredCache::<Vec<u8>, Vec<u8>>::new(config);
 
     // Example usage
     let key = b"example".to_vec();
