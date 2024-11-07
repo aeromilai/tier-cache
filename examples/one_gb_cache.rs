@@ -24,7 +24,7 @@ fn main() {
                 size_range: (MB, 10 * MB),   // 1MB-10MB
             },
         ],
-        update_channel_size: 1024,
+        update_channel_size: None,
     };
 
     let cache = TieredCache::<Vec<u8>, Vec<u8>>::new(config);
