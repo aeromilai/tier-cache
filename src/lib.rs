@@ -104,7 +104,7 @@ where
         }
 
         // No update in progress, we'll do it
-        let (tx, rx) = oneshot::channel();
+        let (tx, _rx) = oneshot::channel();
         self.pending_updates.insert(key.clone(), tx);
 
         // Perform the update
