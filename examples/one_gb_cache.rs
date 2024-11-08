@@ -1,8 +1,6 @@
-use std::time::Duration;
 use tiered_cache::{CacheConfig, TierConfig, TieredCache};
 
 const MB: usize = 1024 * 1024; // 1 megabyte
-const GB: usize = 1024 * MB;   // 1 gigabyte
 
 fn main() {
     // Configure a 1GB cache with three tiers:
