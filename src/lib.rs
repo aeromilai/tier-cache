@@ -93,12 +93,10 @@ where
         }
 
         // Check if there's already an update in progress
-        if let Some(entry) = self.pending_updates.get(&key) {
-            // Create a new channel to receive the result
+        if self.pending_updates.contains_key(&key) {
             let (tx, rx) = oneshot::channel();
-            // Clone the key for the removal closure
             let key_clone = key.clone();
-            let pending_updates = &self.pending_updates;
+            let pending_updates = Arc::new(self.pending_updates.clone());
             
             // Forward the result to our new channel
             tokio::spawn(async move {
@@ -108,7 +106,15 @@ where
                 pending_updates.remove(&key_clone);
             });
             
-            return rx.await.ok().flatten();
+            // Create a separate receiver for the outer await
+            let (result_tx, result_rx) = oneshot::channel();
+            tokio::spawn(async move {
+                if let Ok(result) = rx.await {
+                    let _ = result_tx.send(result);
+                }
+            });
+            
+            return result_rx.await.ok().flatten();
         }
 
         // No update in progress, we'll do it
