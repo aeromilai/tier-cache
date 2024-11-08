@@ -18,7 +18,8 @@ use entry::CacheEntry;
 use futures::Future;
 use parking_lot::RwLock;
 use smallvec::SmallVec;
-use std::{hash::Hash, sync::Arc};
+use std::{hash::Hash, sync::Arc, future::Future};
+use tokio::sync::oneshot;
 use tokio::sync::broadcast;
 use tier::Tier;
 
@@ -36,6 +37,7 @@ where
     config: Arc<CacheConfig>,
     update_tx: Option<broadcast::Sender<K>>,
     put_lock: parking_lot::RwLock<()>,
+    pending_updates: DashMap<K, oneshot::Sender<Option<Arc<V>>>>,
 }
 
 impl<K, V> TieredCache<K, V>
@@ -74,6 +76,7 @@ where
             config: Arc::new(config),
             update_tx: tx,
             put_lock: parking_lot::RwLock::new(()),
+            pending_updates: DashMap::new(),
         }
     }
 
@@ -89,8 +92,38 @@ where
             return Some(value);
         }
 
-        // Slow path: update cache
-        self.update_value(key, updater).await
+        // Check if there's already an update in progress
+        if let Some(entry) = self.pending_updates.get(&key) {
+            // Create a new channel to receive the result
+            let (tx, rx) = oneshot::channel();
+            // Clone the key for the removal closure
+            let key_clone = key.clone();
+            let pending_updates = self.pending_updates.clone();
+            
+            // Forward the result to our new channel
+            tokio::spawn(async move {
+                if let Ok(result) = rx.await {
+                    let _ = tx.send(result);
+                }
+                pending_updates.remove(&key_clone);
+            });
+            
+            return rx.await.ok().flatten();
+        }
+
+        // No update in progress, we'll do it
+        let (tx, rx) = oneshot::channel();
+        self.pending_updates.insert(key.clone(), tx);
+
+        // Perform the update
+        let result = self.update_value(key.clone(), updater).await;
+        
+        // Share result with other waiters
+        if let Some(entry) = self.pending_updates.remove(&key) {
+            let _ = entry.1.send(result.clone());
+        }
+
+        result
     }
 
     #[inline]
