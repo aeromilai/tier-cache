@@ -1,4 +1,4 @@
-use tiered_cache::{AutoCache, CacheConfig, TierConfig};
+use tiered_cache::{CacheConfig, TierConfig, TieredCache};
 
 const MB: usize = 1024 * 1024; // 1 megabyte
 

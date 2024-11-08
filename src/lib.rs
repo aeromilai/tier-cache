@@ -107,14 +107,34 @@ where
     pub fn put(&self, key: K, value: V) -> Option<V> {
         let size = value.heap_size();
 
-        // Fast path: check if size is within any tier
-        let tier_idx = self.find_tier_for_size(size)?;
+        let old_tier = self.key_to_tier.get(&key);
+        let new_tier = self.find_tier_for_size(size);
 
-        let entry = CacheEntry::new(value, size);
-
-        let tier = &self.tiers[tier_idx];
-        self.key_to_tier.insert(key.clone(), tier_idx);
-        tier.put(key, entry)
+        match (old_tier, new_tier) {
+            // key does not fit into any tier
+            (Some(old_idx), Some(new_idx)) if *old_idx == new_idx => {
+                // Fast path: same tier
+                let tier = &self.tiers[*old_idx];
+                let entry = CacheEntry::new(value, size);
+                tier.put(key, entry)
+            }
+            (Some(old_idx), Some(new_idx)) => {
+                // Move to new tier
+                let tier = &self.tiers[*old_idx];
+                tier.remove(&key);
+                drop(old_idx);
+                self.key_to_tier.insert(key.clone(), new_idx);
+                let entry = CacheEntry::new(value, size);
+                self.tiers[new_idx].put(key, entry)
+            }
+            (_, Some(new_idx)) => {
+                // New entry
+                self.key_to_tier.insert(key.clone(), new_idx);
+                let entry = CacheEntry::new(value, size);
+                self.tiers[new_idx].put(key, entry)
+            }
+            _ => None,
+        }
     }
 
     /// Gets a value from the cache
@@ -141,15 +161,7 @@ where
     #[inline]
     fn find_tier_for_size(&self, size: usize) -> Option<usize> {
         // Optimize for common case of small items
-        if !self.tiers.is_empty() && size < self.config.tiers[0].size_range.1 {
-            return Some(0);
-        }
-
-        // Binary search for larger items
-        self.config
-            .tiers
-            .binary_search_by_key(&size, |tier| tier.size_range.0)
-            .ok()
+        self.tiers.iter().position(|tier| size < tier.size_range.1)
     }
 
     /// Gets cache statistics
@@ -187,5 +199,44 @@ where
             tier.clear();
         }
         self.key_to_tier.clear();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_cache() {
+        let config = CacheConfig {
+            tiers: vec![
+                TierConfig {
+                    total_capacity: 200 * 1024 * 1024,
+                    size_range: (0, 64),
+                },
+                TierConfig {
+                    total_capacity: 300 * 1024 * 1024,
+                    size_range: (65, 1024 * 1024),
+                },
+            ],
+            update_channel_size: None,
+        };
+
+        let cache = TieredCache::<Vec<u8>, Vec<u8>>::new(config);
+
+        let key: Vec<u8> = b"example".to_vec();
+
+        assert!(cache.put(key.clone(), vec![0u8; 1]).is_none());
+        cache.put(key.clone(), vec![0u8; 65]);
+
+        let retrieved = cache.get(&key).unwrap();
+        assert_eq!(retrieved.len(), 65);
+
+        cache.remove(&key);
+        assert_eq!(cache.get(&key), None);
+
+        let stats = cache.stats();
+        assert_eq!(stats.total_items, 0);
+        assert_eq!(stats.total_size, 0);
     }
 }
