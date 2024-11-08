@@ -15,10 +15,10 @@ use crossbeam_utils::CachePadded;
 use lru_mem::HeapSize;
 use dashmap::DashMap;
 use entry::CacheEntry;
-use futures::Future;
 use parking_lot::RwLock;
 use smallvec::SmallVec;
-use std::{hash::Hash, sync::Arc, future::Future};
+use std::{hash::Hash, sync::Arc};
+use std::future::Future;
 use tokio::sync::oneshot;
 use tokio::sync::broadcast;
 use tier::Tier;
@@ -98,7 +98,7 @@ where
             let (tx, rx) = oneshot::channel();
             // Clone the key for the removal closure
             let key_clone = key.clone();
-            let pending_updates = self.pending_updates.clone();
+            let pending_updates = &self.pending_updates;
             
             // Forward the result to our new channel
             tokio::spawn(async move {
