@@ -35,6 +35,7 @@ where
     key_to_tier: Arc<DashMap<K, usize>>,
     config: Arc<CacheConfig>,
     update_tx: broadcast::Sender<K>,
+    put_lock: parking_lot::RwLock<()>,
 }
 
 impl<K, V> TieredCache<K, V>
@@ -70,6 +71,7 @@ where
             )),
             config: Arc::new(config),
             update_tx: tx,
+            put_lock: parking_lot::RwLock::new(()),
         }
     }
 
@@ -112,23 +114,27 @@ where
         // Fast path: check if size is within any tier
         let tier_idx = self.find_tier_for_size(size)?;
         
-        // Remove from previous tier if it exists
-        let old_value = if let Some(old_tier_idx) = self.key_to_tier.get(&key) {
-            if *old_tier_idx != tier_idx {
-                self.tiers[*old_tier_idx].remove(&key)
-            } else {
-                None
+        // Acquire write lock for the entire operation
+        let _guard = self.put_lock.write();
+        
+        // Remove from ALL other tiers to ensure consistency
+        let mut old_value = None;
+        for (i, tier) in self.tiers.iter().enumerate() {
+            if i != tier_idx {
+                if let Some(removed) = tier.remove(&key) {
+                    old_value = Some(removed);
+                }
             }
-        } else {
-            None
-        };
+        }
         
         let entry = CacheEntry::new(value, size);
         let tier = &self.tiers[tier_idx];
-        self.key_to_tier.insert(key.clone(), tier_idx);
         
-        // Return either the value from the old tier or from the current tier's put
+        // Update mapping and insert new value
+        self.key_to_tier.insert(key.clone(), tier_idx);
         old_value.or_else(|| tier.put(key, entry))
+        
+        // Lock is automatically released when _guard goes out of scope
     }
 
     /// Gets a value from the cache
