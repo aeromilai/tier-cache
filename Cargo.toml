@@ -12,7 +12,7 @@ categories = ["caching", "data-structures"]
 lru-mem = "0.3"
 parking_lot = "0.12"
 dashmap = "6.1.0"
-tokio = { version = "1.41.1", features = ["sync", "time", "rt-multi-thread", "spawn"] }
+tokio = { version = "1.41.1", features = ["sync", "time", "rt-multi-thread", "macros"] }
 serde = { version = "1.0", features = ["derive"] }
 futures = "0.3"
 smallvec = "1.11"
