@@ -28,7 +28,7 @@ tiered-cache = "0.1.5"
 ## Quick Start
 
 ```rust
-use tiered_cache::{AutoCache, CacheConfig, TierConfig};
+use tiered_cache::{TieredCache, CacheConfig, TierConfig};
 use std::time::Duration;
 
 const MB: usize = 1024 * 1024;
@@ -49,7 +49,7 @@ let config = CacheConfig {
 };
 
 // Create the cache
-let cache = AutoCache::<Vec<u8>, Vec<u8>>::new(config);
+let cache = TieredCache::<Vec<u8>, Vec<u8>>::new(config);
 
 // Basic operations
 cache.put(b"key1".to_vec(), vec![0; 1024]);
