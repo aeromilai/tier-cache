@@ -194,9 +194,13 @@ where
     /// Removes a value from the cache
     #[inline]
     pub fn remove(&self, key: &K) -> Option<V> {
+        // Acquire write lock for the entire operation
+        let _guard = self.put_lock.write();
+        
         let tier_idx = self.key_to_tier.remove(key)?;
         let tier = &self.tiers[tier_idx.1];
         tier.remove(key)
+        // Lock is automatically released when _guard goes out of scope
     }
 
     /// Clears the cache
