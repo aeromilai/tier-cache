@@ -112,11 +112,23 @@ where
         // Fast path: check if size is within any tier
         let tier_idx = self.find_tier_for_size(size)?;
         
+        // Remove from previous tier if it exists
+        let old_value = if let Some(old_tier_idx) = self.key_to_tier.get(&key) {
+            if *old_tier_idx != tier_idx {
+                self.tiers[*old_tier_idx].remove(&key)
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+        
         let entry = CacheEntry::new(value, size);
-
         let tier = &self.tiers[tier_idx];
         self.key_to_tier.insert(key.clone(), tier_idx);
-        tier.put(key, entry)
+        
+        // Return either the value from the old tier or from the current tier's put
+        old_value.or_else(|| tier.put(key, entry))
     }
 
     /// Gets a value from the cache
